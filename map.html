@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>الخريطة التفاعلية - حيّك</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <i class="fas fa-house-user"></i> حيّك
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-item">الرئيسية</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="custom-controls">
+    <div class="fake-geocoder">
+      <input type="text" placeholder="ابحث عن حي أو موقع في الرياض...">
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="fake-btn" title="تحديد موقعي الحالي">
+      <i class="fas fa-crosshairs"></i>
+    </div>
+    <div class="fake-btn" title="تكبير">
+      <i class="fas fa-plus"></i>
+    </div>
+    <div class="fake-btn" title="تصغير">
+      <i class="fas fa-minus"></i>
+    </div>
+  </div>
+
+  <div class="map-title">
+    <i class="fas fa-map-marked-alt" style="color: var(--accent);"></i> خريطة منصة حيّك التفاعلية
+  </div>
+
+  <div id="map-container">
+    <canvas id="map-canvas"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('map-canvas');
+    const ctx = canvas.getContext('2d');
+    
+   
+    let width = canvas.width = window.innerWidth * 2;
+    let height = canvas.height = window.innerHeight * 2;
+
+   
+    const locations = [];
+    for(let i = 0; i < 65; i++) {
+      locations.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 4 + 2,
+        pulse: Math.random() * Math.PI
+      });
+    }
+
+    
+    let offsetX = -width / 4, offsetY = -height / 4; 
+    let isDragging = false;
+    let startX, startY;
+
+    
+    function drawMap() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.translate(offsetX, offsetY);
+
+      
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+      ctx.lineWidth = 1;
+      const gridSize = 70;
+      for (let x = -width; x < width * 2; x += gridSize) {
+        ctx.beginPath(); ctx.moveTo(x, -height); ctx.lineTo(x, height * 2); ctx.stroke();
+      }
+      for (let y = -height; y < height * 2; y += gridSize) {
+        ctx.beginPath(); ctx.moveTo(-width, y); ctx.lineTo(width * 2, y); ctx.stroke();
+      }
+
+      
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-width, height/2); ctx.lineTo(width*2, height/2);
+      ctx.moveTo(width/2, -height); ctx.lineTo(width/2, height*2);
+      ctx.arc(width/2, height/2, 300, 0, Math.PI * 2);
+      ctx.arc(width/2, height/2, 600, 0, Math.PI * 2);
+      ctx.stroke();
+
+     
+      locations.forEach(loc => {
+        loc.pulse += 0.025; 
+        let pulseSize = loc.size + Math.sin(loc.pulse) * 2;
+        
+        
+        ctx.beginPath();
+        ctx.arc(loc.x, loc.y, pulseSize * 3, 0, Math.PI * 2);
+        ctx.fillStyle = loc.size > 4 ? 'rgba(255, 107, 0, 0.12)' : 'rgba(33, 150, 83, 0.12)';
+        ctx.fill();
+
+        
+        ctx.beginPath();
+        ctx.arc(loc.x, loc.y, loc.size, 0, Math.PI * 2);
+        ctx.fillStyle = loc.size > 4 ? '#ff6b00' : '#219653'; 
+        ctx.fill();
+      });
+
+      ctx.restore();
+      requestAnimationFrame(drawMap);
+    }
+
+    
